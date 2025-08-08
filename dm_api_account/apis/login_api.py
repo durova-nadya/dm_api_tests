@@ -21,7 +21,7 @@ class LoginApi:
         :return:
         """
         response = requests.post(
-            url='http://5.63.153.31:5051/v1/account/login',
+            url=f'{self.host}/v1/account/login',
             json=json_data
         )
         return response

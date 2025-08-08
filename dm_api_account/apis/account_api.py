@@ -28,19 +28,17 @@ class AccountApi:
 
     def put_v1_account_token(
             self,
-            token
+            token,
+            **kwargs
     ):
         """
         Activate registered user
         :param token:
         :return:
         """
-        headers = {
-            'accept': 'text/plain',
-        }
+
         response = requests.put(
-            url=f'{self.host}/v1/account/{token}',
-            headers=headers
+            url=f'{self.host}/v1/account/{token}'
         )
         return response
 
