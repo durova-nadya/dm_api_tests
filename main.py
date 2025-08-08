@@ -39,3 +39,5 @@ print(response.status_code)
 pprint.pprint(response.json())
 response_json = response.json()
 print(response_json['resource']['rating']['quantity'])
+
+
