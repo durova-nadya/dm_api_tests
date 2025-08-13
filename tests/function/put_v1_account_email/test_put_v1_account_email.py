@@ -11,7 +11,7 @@ def test_post_v1_account_email():
     account_api = AccountApi(host=host)
     login_api = LoginApi(host=host)
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
-    login = 'PutinLoo'
+    login = 'PutinLoo1'
     email = f'{login}@mail.ru'
     password = '1234567'
     json_data = {
@@ -148,22 +148,3 @@ def get_rename_token_by_email(
             token = user_data['ConfirmationLinkUrl'].split('/')[-1]
     return token
 
-"""
-- Регистрируемся
-
-     - Получаем активационный токен
-
-     - Активируем
-
-     - Заходим
-
-     - Меняем емейл
-
-     - Пытаемся войти, получаем 403
-
-     - На почте находим токен по новому емейлу для подтверждения смены емейла
-
-     - .Активируем этот токен
-
-     -  Логинимся
-"""

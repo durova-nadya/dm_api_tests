@@ -11,7 +11,7 @@ def test_post_v1_account_token():
     account_api = AccountApi(host=host)
     login_api = LoginApi(host=host)
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
-    login = 'lopatkinLoo'
+    login = 'lopatkinLoo1'
     email = f'{login}@mail.ru'
     password = '1234567'
     json_data = {
