@@ -8,18 +8,18 @@ from retrying import retry
 
 def retry_if_result_none(
         result
-        ):
+):
     """Return True if we should retry (in this case when result is None), False otherwise"""
     return result is None
 
 
 def retrier(
         function
-        ):
+):
     def wrapper(
             *args,
             **kwargs
-            ):
+    ):
         token = None
         count = 0
         while token is None:
@@ -50,7 +50,7 @@ class AccountHelper:
             login: str,
             password: str,
             email: str
-            ):
+    ):
         json_data = {
             'login': login,
             'email': email,
@@ -73,7 +73,7 @@ class AccountHelper:
             login: str,
             password: str,
             remember_me: bool = True
-            ):
+    ):
         json_data = {
             'login': login,
             'password': password,
@@ -87,50 +87,34 @@ class AccountHelper:
     def rename_email(
             self,
             login: str,
-            password: str
-            ):
+            password: str,
+            new_email: str
+    ):
         json_data = {
             'login': login,
             'password': password,
-            'email': f'{login}_new@mail.ru',
+            'email': new_email,
         }
 
         response = self.dm_account_api.account_api.put_v1_account_email(json_data=json_data)
         assert response.status_code == 200, "Email не был изменён"
         return response
 
-    def user_login_after_rename_email(
-            self,
-            login: str,
-            password: str,
-            remember_me: bool = True
-            ):
-        json_data = {
-            'login': login,
-            'password': password,
-            'rememberMe': remember_me,
-        }
 
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
-        assert response.status_code == 403, "Пользователь смог авторизоваться после смены емайла"
-
-        # response = self.mailhog.mailhog_api.get_api_v2_messages()
-        # assert response.status_code == 200, "Письма не были получены"
-
-        token = self.get_rename_token_by_email(login=login)
-        assert token is not None, f"Токен для пользователя {login}, не был получен"
-
+    def change_email(self, login: str, email: str, password: str, new_email: str):
+        self.rename_email(login=login, password=password, new_email=new_email)
+        token = self.get_rename_token_by_email(login=login, new_email=new_email)
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         assert response.status_code == 200, "Пользователь не был активирован"
-
         return response
 
-    #@retrier
+
+    # @retrier
     @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
     def get_activation_token_by_login(
             self,
             login
-            ):
+    ):
         token = None
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         for item in response.json()['items']:
@@ -144,28 +128,16 @@ class AccountHelper:
     def get_rename_token_by_email(
             self,
             login,
-
+            new_email
     ):
         token = None
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         for item in response.json()['items']:
-            to_mailbox = item['To'][0]['Mailbox']
+            email = item['To'][0]['Mailbox'] + "@" + item['To'][0]['Domain']
             user_data = loads(item['Content']['Body'])
             user_login = user_data['Login']
-            if user_login == login and to_mailbox == login + '_new':
+            if user_login == login and email == new_email:
                 token = user_data['ConfirmationLinkUrl'].split('/')[-1]
         return token
 
-    # @staticmethod
-    # def get_rename_token_by_email(
-    #         login,
-    #         response
-    # ):
-    #     token = None
-    #     for item in response.json()['items']:
-    #         to_mailbox = item['To'][0]['Mailbox']
-    #         user_data = loads(item['Content']['Body'])
-    #         user_login = user_data['Login']
-    #         if user_login == login and to_mailbox == login + '_new':
-    #             token = user_data['ConfirmationLinkUrl'].split('/')[-1]
-    #     return token
+
