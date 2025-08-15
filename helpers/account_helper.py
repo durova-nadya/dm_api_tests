@@ -1,8 +1,24 @@
+import time
 from json import loads
 
+#from main import response
 from services.api_mailhog import MailHogApi
 from services.dm_api_account import DMApiAccount
 
+def retrier(function):
+    def wrapper(*args, **kwargs):
+        token = None
+        count = 0
+        while token is None:
+            token = function(*args, **kwargs)
+            count += 1
+            print(f"Попытка получения токена номер {count}!")
+            if count == 5:
+                raise AssertionError("Превышено количество попыток получения активационного токена!")
+            if token:
+                return token
+            time.sleep(1)
+    return  wrapper
 
 class AccountHelper:
 
@@ -24,10 +40,9 @@ class AccountHelper:
         response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
         assert response.status_code == 201, f"Пользователь не был создан {response.json()}"
 
-        response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, "Письма не были получены"
 
-        token = self.get_activation_token_by_login(login=login, response=response)
+
+        token = self.get_activation_token_by_login(login=login)
         assert token is not None, f"Токен для пользователя {login}, не был получен"
 
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
@@ -79,9 +94,11 @@ class AccountHelper:
 
         return response
 
-    @staticmethod
-    def get_activation_token_by_login(login, response):
+    @retrier
+    def get_activation_token_by_login(self, login):
         token = None
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
+        #assert response.status_code == 200, "Письма не были получены"
         for item in response.json()['items']:
             user_data = loads(item['Content']['Body'])
             user_login = user_data['Login']
