@@ -1,4 +1,6 @@
 import datetime
+import random
+import string
 from collections import namedtuple
 
 import pytest
@@ -47,9 +49,12 @@ def auth_account_helper(mailhog_api):
 
 @pytest.fixture
 def prepare_user():
-    now = datetime.datetime.now()
-    data = now.strftime("%d_%m_%Y_%H_%M_%S")
-    login = f'AlexBlok_{data}'
+    # now = datetime.datetime.now()
+    # data = now.strftime("%d_%m_%Y_%H_%M_%S")
+    # login = f'joy_{data}'
+    characters = string.ascii_letters + string.digits  # Все английские буквы (в верхнем и нижнем регистре) и цифры
+    random_part = ''.join(random.choice(characters) for _ in range(7))  # Генерируем случайную строку
+    login = "joy_" + random_part
     password = 'abcd12345'
     email = f'{login}@mail.ru'
     User = namedtuple("user", ["login", "password", "email"])
