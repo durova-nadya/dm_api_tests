@@ -70,3 +70,37 @@ class AccountApi(RestClient):
             **kwargs
         )
         return response
+
+    def post_v1_account_password(
+            self,
+            json_data,
+            **kwargs
+    ):
+        """
+        Reset registered user password
+        :param json_data:
+        :return:
+        """
+        response = self.post(
+            path='/v1/account/password',
+            json=json_data,
+            **kwargs
+        )
+        return response
+
+
+    def put_v1_account_password(
+            self,
+            json_data
+    ):
+        """
+        Change registered user password
+        :param json_data:
+        :return:
+        """
+        response = self.put(
+            path='/v1/account/password',
+            json=json_data
+        )
+        return response
+
