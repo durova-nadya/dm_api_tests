@@ -8,18 +8,18 @@ from retrying import retry
 
 def retry_if_result_none(
         result
-        ):
+):
     """Return True if we should retry (in this case when result is None), False otherwise"""
     return result is None
 
 
 def retrier(
         function
-        ):
+):
     def wrapper(
             *args,
             **kwargs
-            ):
+    ):
         token = None
         count = 0
         while token is None:
@@ -50,7 +50,7 @@ class AccountHelper:
             login: str,
             password: str,
             email: str
-            ):
+    ):
         json_data = {
             'login': login,
             'email': email,
@@ -73,7 +73,7 @@ class AccountHelper:
             login: str,
             password: str,
             remember_me: bool = True
-            ):
+    ):
         json_data = {
             'login': login,
             'password': password,
@@ -84,53 +84,55 @@ class AccountHelper:
         assert response.status_code == 200, "Пользователь не смог авторизоваться"
         return response
 
-    def rename_email(
+    def update_email(
             self,
             login: str,
-            password: str
-            ):
+            password: str,
+            new_email: str
+    ):
         json_data = {
             'login': login,
             'password': password,
-            'email': f'{login}_new@mail.ru',
+            'email': new_email,
         }
 
         response = self.dm_account_api.account_api.put_v1_account_email(json_data=json_data)
         assert response.status_code == 200, "Email не был изменён"
         return response
 
-    def user_login_after_rename_email(
-            self,
-            login: str,
-            password: str,
-            remember_me: bool = True
-            ):
-        json_data = {
-            'login': login,
-            'password': password,
-            'rememberMe': remember_me,
-        }
 
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
-        assert response.status_code == 403, "Пользователь смог авторизоваться после смены емайла"
+    def change_email(self, login: str, email: str, password: str, new_email: str):
+        #self.update_email(login=login, password=password, new_email=new_email)
+        response = self.dm_account_api.account_api.put_v1_account_email(
+            json_data={
+                'login': login,
+                'password': password,
+                'email': new_email,
+            }
+        )
+        assert response.status_code == 200, f"Email для пользователя {login} не был изменён"
 
-        # response = self.mailhog.mailhog_api.get_api_v2_messages()
-        # assert response.status_code == 200, "Письма не были получены"
-
-        token = self.get_rename_token_by_email(login=login)
-        assert token is not None, f"Токен для пользователя {login}, не был получен"
-
+        token = self.get_rename_token_by_email(login=login, new_email=new_email)
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         assert response.status_code == 200, "Пользователь не был активирован"
-
         return response
 
-    #@retrier
+
+    def change_password(self, login: str, email:str, old_password:str, new_password:str):
+        response = self.user_login(login=login, password=old_password)
+        self.dm_account_api.account_api.post_v1_account_password({"login": login, "email":email}, headers={"x-dm-auth-token": response.headers["x-dm-auth-token"]})
+        token = self.get_token(login=login, token_type="reset")
+        response = self.dm_account_api.account_api.put_v1_account_password(json_data={"login":login, "oldPassword": old_password, "newPassword": new_password, "token": token})
+        assert response.status_code == 200, f"Пароль пользователя {login} не был изменён"
+        return response
+
+
+    # @retrier
     @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
     def get_activation_token_by_login(
             self,
             login
-            ):
+    ):
         token = None
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         for item in response.json()['items']:
@@ -144,28 +146,65 @@ class AccountHelper:
     def get_rename_token_by_email(
             self,
             login,
-
+            new_email
     ):
         token = None
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         for item in response.json()['items']:
-            to_mailbox = item['To'][0]['Mailbox']
+            email = item['To'][0]['Mailbox'] + "@" + item['To'][0]['Domain']
             user_data = loads(item['Content']['Body'])
             user_login = user_data['Login']
-            if user_login == login and to_mailbox == login + '_new':
+            if user_login == login and email == new_email:
                 token = user_data['ConfirmationLinkUrl'].split('/')[-1]
         return token
 
-    # @staticmethod
-    # def get_rename_token_by_email(
-    #         login,
-    #         response
-    # ):
-    #     token = None
-    #     for item in response.json()['items']:
-    #         to_mailbox = item['To'][0]['Mailbox']
-    #         user_data = loads(item['Content']['Body'])
-    #         user_login = user_data['Login']
-    #         if user_login == login and to_mailbox == login + '_new':
-    #             token = user_data['ConfirmationLinkUrl'].split('/')[-1]
-    #     return token
+    @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
+    def get_token(
+            self,
+            login,
+            token_type="activation"
+    ):
+        token = None
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
+        for item in response.json()['items']:
+            user_data = loads(item['Content']['Body'])
+            user_login = user_data['Login']
+            activation_token = user_data.get("ConfirmationLinkUrl")
+            reset_token = user_data.get("ConfirmationLinkUri")
+            if user_login == login and activation_token and token_type == "activation":
+                token = activation_token.split('/')[-1]
+            elif user_login ==login and reset_token and token_type == "reset":
+                token = reset_token.split('/')[-1]
+
+        return token
+
+
+    def auth_client(
+            self,
+            login: str,
+            password: str
+            ):
+        response = self.dm_account_api.login_api.post_v1_account_login(json_data={"login": login, "password": password})
+        token = {"x-dm-auth-token": response.headers["x-dm-auth-token"]}
+        self.dm_account_api.account_api.set_headers(token)
+        self.dm_account_api.login_api.set_headers(token)
+        #return token
+
+    def user_logout(self, token:str):
+        response = self.dm_account_api.login_api.delete_v1_account_login(headers={"x-dm-auth-token": token})
+        assert response.status_code == 204, "Сессия пользователя не завершена!"
+        return response
+
+
+
+    def user_logout_all(self, token:str):
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers={"x-dm-auth-token": token})
+        assert response.status_code == 204, "Сессии пользователя не завершены!"
+        return response
+
+
+
+
+
+
+
