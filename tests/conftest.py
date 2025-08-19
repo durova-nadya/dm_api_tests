@@ -49,8 +49,8 @@ def auth_account_helper(mailhog_api):
 
 @pytest.fixture
 def prepare_user():
-    characters = string.ascii_letters + string.digits  # Все английские буквы (в верхнем и нижнем регистре) и цифры
-    random_part = ''.join(random.choice(characters) for _ in range(7))  # Генерируем случайную строку
+    characters = string.ascii_letters + string.digits
+    random_part = ''.join(random.choice(characters) for _ in range(7))
     login = "joy_" + random_part
     password = 'abcd12345'
     email = f'{login}@mail.ru'

@@ -1,4 +1,5 @@
 from dm_api_account.models.registration import Registration
+from dm_api_account.models.user_details_envelope import UserDetailsEnvelope
 from dm_api_account.models.user_envelope import UserEnvelope
 from restclient.client import RestClient
 
@@ -63,6 +64,7 @@ class AccountApi(RestClient):
 
     def get_v1_account(
             self,
+            validate_response=True,
             **kwargs
     ):
         """
@@ -73,7 +75,8 @@ class AccountApi(RestClient):
             path='/v1/account',
             **kwargs
         )
-        # UserEnvelope(**response.json())
+        if validate_response:
+            return UserDetailsEnvelope(**response.json())
         return response
 
     def post_v1_account_password(
