@@ -10,10 +10,7 @@ from restclient.client import RestClient
 class AccountApi(RestClient):
 
 
-    def post_v1_account(
-            self,
-            registration: Registration
-    ):
+    def post_v1_account(self, registration: Registration):
         """
         Register new user
         :return:
@@ -24,12 +21,7 @@ class AccountApi(RestClient):
         )
         return response
 
-    def put_v1_account_token(
-            self,
-            token,
-            validate_response=True,
-            **kwargs
-    ):
+    def put_v1_account_token(self, token, validate_response=True, **kwargs):
         """
         Activate registered user
         :param token:
@@ -43,10 +35,7 @@ class AccountApi(RestClient):
             return UserEnvelope(**response.json())
         return response
 
-    def put_v1_account_email(
-            self,
-            change_email: ChangeEmail
-    ):
+    def put_v1_account_email(self, change_email: ChangeEmail):
         """
         Change registered user email
         :return:
@@ -64,11 +53,7 @@ class AccountApi(RestClient):
         return response
 
 
-    def get_v1_account(
-            self,
-            validate_response=True,
-            **kwargs
-    ):
+    def get_v1_account(self,validate_response=True,**kwargs):
         """
         Get current user
         :return:
@@ -81,11 +66,7 @@ class AccountApi(RestClient):
             return UserDetailsEnvelope(**response.json())
         return response
 
-    def post_v1_account_password(
-            self,
-            reset_password: ResetPassword,
-            **kwargs
-    ):
+    def post_v1_account_password(self, reset_password: ResetPassword, **kwargs):
         """
         Reset registered user password
         :return:
@@ -98,10 +79,7 @@ class AccountApi(RestClient):
         return response
 
 
-    def put_v1_account_password(
-            self,
-            change_password: ChangePassword
-    ):
+    def put_v1_account_password(self,change_password: ChangePassword):
         """
         Change registered user password
         :return:

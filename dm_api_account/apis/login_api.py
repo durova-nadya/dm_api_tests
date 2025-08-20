@@ -7,11 +7,7 @@ from restclient.client import RestClient
 
 class LoginApi(RestClient):
 
-    def post_v1_account_login(
-            self,
-            login_credentials: LoginCredentials,
-            validate_response=True
-    ):
+    def post_v1_account_login(self, login_credentials: LoginCredentials, validate_response=True):
         """
         Authenticate via credentials
         :return:
@@ -24,10 +20,7 @@ class LoginApi(RestClient):
             return UserEnvelope(**response.json())
         return response
 
-    def delete_v1_account_login(
-            self,
-            **kwargs
-    ):
+    def delete_v1_account_login(self, **kwargs):
         """
         Logout as current user
         :return:
@@ -39,10 +32,7 @@ class LoginApi(RestClient):
         )
         return response
 
-    def delete_v1_account_login_all(
-            self,
-            **kwargs
-    ):
+    def delete_v1_account_login_all(self, **kwargs):
         """
         Logout from every device
         :return:
