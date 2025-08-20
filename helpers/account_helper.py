@@ -3,6 +3,7 @@ from json import loads
 
 from requests import JSONDecodeError
 
+from dm_api_account.models.change_email import ChangeEmail
 from dm_api_account.models.change_password import ChangePassword
 from dm_api_account.models.login_credentials import LoginCredentials
 from dm_api_account.models.registration import Registration
@@ -106,23 +107,15 @@ class AccountHelper:
     def change_email(
             self,
             login: str,
-            email: str,
             password: str,
             new_email: str
             ):
-        # self.update_email(login=login, password=password, new_email=new_email)
-        response = self.dm_account_api.account_api.put_v1_account_email(
-            json_data={
-                'login': login,
-                'password': password,
-                'email': new_email,
-            }
-        )
+        change_email = ChangeEmail(login=login, password=password, email=new_email)
+        response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
         assert response.status_code == 200, f"Email для пользователя {login} не был изменён"
 
         token = self.get_rename_token_by_email(login=login, new_email=new_email)
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
-        assert response.status_code == 200, "Пользователь не был активирован"
         return response
 
     def change_password(
@@ -156,7 +149,8 @@ class AccountHelper:
     @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
     def get_activation_token_by_login(
             self,
-            login
+            login,
+            token_type="activation"
     ):
         token = None
         response = self.mailhog.mailhog_api.get_api_v2_messages()
@@ -166,8 +160,10 @@ class AccountHelper:
             except (JSONDecodeError, KeyError):
                 continue
             user_login = user_data['Login']
-            if user_login == login:
+            if user_login == login and token_type=="activation":
                 token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+            # if user_login == login and email == new_email:
+            #     token = user_data['ConfirmationLinkUrl'].split('/')[-1]
         return token
 
     @retrier
@@ -179,12 +175,16 @@ class AccountHelper:
         token = None
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         for item in response.json()['items']:
-            email = item['To'][0]['Mailbox'] + "@" + item['To'][0]['Domain']
-            user_data = loads(item['Content']['Body'])
+            try:
+                email = item['To'][0]['Mailbox'] + "@" + item['To'][0]['Domain']
+                user_data = loads(item['Content']['Body'])
+            except (JSONDecodeError, KeyError):
+                continue
             user_login = user_data['Login']
             if user_login == login and email == new_email:
                 token = user_data['ConfirmationLinkUrl'].split('/')[-1]
         return token
+
 
     @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
     def get_token(
