@@ -78,14 +78,17 @@ class AccountHelper:
             self,
             login: str,
             password: str,
-            remember_me: bool = True
+            remember_me: bool = True,
+            validate_response = False,
+            validate_headers = False
     ):
         login_credentials = LoginCredentials(login=login, password=password, rememberMe=remember_me)
         response = self.dm_account_api.login_api.post_v1_account_login(
-            login_credentials=login_credentials, validate_response=False
+            login_credentials=login_credentials, validate_response=validate_response
             )
-        assert response.headers["x-dm-auth-token"], f"Токен для пользователя {login} не был получен"
-        assert response.status_code == 200, "Пользователь не смог авторизоваться"
+        if validate_headers:
+            assert response.headers["x-dm-auth-token"], f"Токен для пользователя {login} не был получен"
+            assert response.status_code == 200, "Пользователь не смог авторизоваться"
         return response
 
 
