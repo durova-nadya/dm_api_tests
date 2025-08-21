@@ -62,7 +62,7 @@ class AccountApi(RestClient):
             path='/v1/account',
             **kwargs
         )
-        if validate_response:
+        if validate_response and response.status_code == 200:
             return UserDetailsEnvelope(**response.json())
         return response
 

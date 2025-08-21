@@ -2,12 +2,18 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import (
+    List,
+    Optional,
+    Literal,
+)
 
 from pydantic import (
     BaseModel,
     Field,
     ConfigDict,
+    Extra,
+    StrictStr,
 )
 
 class UserRole(str, Enum):
@@ -25,9 +31,13 @@ class Rating(BaseModel):
     quantity: int
 
 
+BbParseMode = Literal["Common", "Info", "Post", "Chat"]
+ColorSchema = Literal["Modern", "Pale", "Classic", "ClassicPale", "Night"]
+
+
 class InfoBbText(BaseModel):
-    value: str
-    parse_mode: str = Field(..., alias='parseMode')
+    value: Optional[str] = None
+    parse_mode: Optional[BbParseMode] = None
 
 
 class PagingSettings(BaseModel):
@@ -39,7 +49,7 @@ class PagingSettings(BaseModel):
 
 
 class UserSettings(BaseModel):
-    color_schema: str = Field(..., alias='colorSchema')
+    color_schema: ColorSchema | str = Field(None)
     nanny_greetings_message: str = Field(None, alias='nannyGreetingsMessage')
     paging: PagingSettings
 
@@ -58,11 +68,11 @@ class UserDetails(BaseModel):
     icq: str = Field(None, alias="icq")
     skype: str = Field(None, alias="skype")
     original_picture_url: str = Field(None, alias='originalPictureUrl')
-    info: str = Field(None, alias="info")
+    info: InfoBbText | str = Field(None)
     settings: UserSettings
 
 
 class UserDetailsEnvelope(BaseModel):
     model_config = ConfigDict(extra="forbid")
     resource: Optional[UserDetails] = None
-    metadata: Optional[str] = None
+    metadata: Optional[dict] = None
