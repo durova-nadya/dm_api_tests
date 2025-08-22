@@ -1,10 +1,7 @@
 import json
 import time
 from enum import Enum
-from json import loads
-
 from requests import JSONDecodeError
-
 from dm_api_account.models.change_email import ChangeEmail
 from dm_api_account.models.change_password import ChangePassword
 from dm_api_account.models.login_credentials import LoginCredentials
@@ -151,7 +148,10 @@ class AccountHelper:
 
         emails = self.mailhog.mailhog_api.get_api_v2_messages(limit=10).json()["items"]
         for email in emails:
-            user_data = json.loads(email["Content"]["Body"])
+            try:
+                user_data = json.loads(email["Content"]["Body"])
+            except (JSONDecodeError, KeyError):
+                continue
             if user_data.get("Login") == login and user_data.get(link_type):
                 token_link_url = user_data[link_type]
                 token = token_link_url.split("/")[-1]
