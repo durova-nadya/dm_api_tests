@@ -1,3 +1,4 @@
+import json
 import time
 from json import loads
 
@@ -176,8 +177,8 @@ class AccountHelper:
                 token = activation_token.split('/')[-1]
             elif user_login == login and reset_token and token_type == "reset":
                 token = reset_token.split('/')[-1]
-
         return token
+
 
     def auth_client(self, login: str, password: str):
         response = self.user_login(login=login, password=password)
@@ -185,14 +186,18 @@ class AccountHelper:
         self.dm_account_api.account_api.set_headers(token)
         self.dm_account_api.login_api.set_headers(token)
 
-    def user_logout(self, token: str):
-        response = self.dm_account_api.login_api.delete_v1_account_login(
-            headers={"x-dm-auth-token": token})
+    def user_logout(self, token: str | None):
+        headers ={}
+        if token:
+            headers = {"x-dm-auth-token": token}
+        response = self.dm_account_api.login_api.delete_v1_account_login(headers=headers)
         assert response.status_code == 204, "Сессия пользователя не завершена!"
         return response
 
-    def user_logout_all(self, token: str):
-        response = self.dm_account_api.login_api.delete_v1_account_login_all(
-            headers={"x-dm-auth-token": token})
+    def user_logout_all(self, token: str | None):
+        headers = {}
+        if token:
+            headers = {"x-dm-auth-token": token}
+        response = self.dm_account_api.login_api.delete_v1_account_login_all(headers=headers)
         assert response.status_code == 204, "Сессии пользователя не завершены!"
         return response
