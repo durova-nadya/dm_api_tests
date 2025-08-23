@@ -14,12 +14,12 @@ from hamcrest import (
 class PostV1Account:
 
     @classmethod
-    def check_response_values(cls, response):
+    def check_response_values(cls, response, prefix):
         today = datetime.now().strftime('%Y-%m-%d')
         assert_that(str(response.resource.registration), starts_with(today))
         assert_that(
             response, all_of(
-                has_property('resource', has_property('login', starts_with("joy"))),
+                has_property('resource', has_property('login', starts_with(prefix))),
                 has_property('resource', has_property('registration', instance_of(datetime))),
                 has_property(
                     'resource', has_properties(

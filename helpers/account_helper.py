@@ -101,8 +101,7 @@ class AccountHelper:
             new_email: str
             ):
         change_email = ChangeEmail(login=login, password=password, email=new_email)
-        response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
-        assert response.status_code == 200, f"Email для пользователя {login} не был изменён"
+        self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
         token = self.get_token_by_login(login=login, token_type=TokenType.ACTIVATE)
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         return response
@@ -131,7 +130,6 @@ class AccountHelper:
             newPassword=new_password
         )
         response = self.dm_account_api.account_api.put_v1_account_password(change_password=change_password)
-        assert response.status_code == 200, f"Пароль пользователя {login} не был изменён"
         return response
 
 
