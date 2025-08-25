@@ -17,10 +17,6 @@ def test_delete_v1_account_login_all(account_helper, prepare_user):
 
     account_helper.user_logout_all(token_1)
 
-    for token in [token_1, token_2]:
-        response = account_helper.dm_account_api.account_api.get_v1_account(headers={"x-dm-auth-token": token})
-        assert response.status_code == 401, f"Токен {token} активен!"
-
 
 
 

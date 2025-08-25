@@ -5,15 +5,12 @@ from enum import Enum
 from typing import (
     List,
     Optional,
-    Literal,
 )
 
 from pydantic import (
     BaseModel,
     Field,
     ConfigDict,
-    Extra,
-    StrictStr,
 )
 
 class UserRole(str, Enum):
@@ -31,13 +28,23 @@ class Rating(BaseModel):
     quantity: int
 
 
-BbParseMode = Literal["Common", "Info", "Post", "Chat"]
-ColorSchema = Literal["Modern", "Pale", "Classic", "ClassicPale", "Night"]
+class BbParseMode(str, Enum):
+    COMMON = "Common"
+    INFO = "Info"
+    POST = "Post"
+    CHAT = "Chat"
+
+class ColorSchema(str, Enum):
+    MODERN = "Modern"
+    PALE = "Pale"
+    CLASSIC = "Classic"
+    CLASSICPALE = "ClassicPale"
+    NIGHT = "Night"
 
 
 class InfoBbText(BaseModel):
     value: Optional[str] = None
-    parse_mode: Optional[BbParseMode] = None
+    parse_mode: List[BbParseMode]
 
 
 class PagingSettings(BaseModel):
@@ -49,7 +56,7 @@ class PagingSettings(BaseModel):
 
 
 class UserSettings(BaseModel):
-    color_schema: ColorSchema | str = Field(None)
+    color_schema: List[ColorSchema] | str = Field(None)
     nanny_greetings_message: str = Field(None, alias='nannyGreetingsMessage')
     paging: PagingSettings
 
