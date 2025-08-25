@@ -35,7 +35,7 @@ class AccountApi(RestClient):
             return UserEnvelope(**response.json())
         return response
 
-    def put_v1_account_email(self, change_email: ChangeEmail):
+    def put_v1_account_email(self, change_email: ChangeEmail, validate_response=True):
         """
         Change registered user email
         :return:
@@ -50,6 +50,8 @@ class AccountApi(RestClient):
             headers=headers,
             json=change_email.model_dump(exclude_none=True, by_alias=True)
         )
+        if validate_response:
+            return UserEnvelope(**response.json())
         return response
 
 
@@ -66,7 +68,7 @@ class AccountApi(RestClient):
             return UserDetailsEnvelope(**response.json())
         return response
 
-    def post_v1_account_password(self, reset_password: ResetPassword, **kwargs):
+    def post_v1_account_password(self, reset_password: ResetPassword, validate_response=True, **kwargs):
         """
         Reset registered user password
         :return:
@@ -76,10 +78,13 @@ class AccountApi(RestClient):
             json=reset_password.model_dump(exclude_none=True, by_alias=True),
             **kwargs
         )
+        if validate_response:
+            if response.status_code == 201:
+                return UserEnvelope(**response.json())
         return response
 
 
-    def put_v1_account_password(self,change_password: ChangePassword):
+    def put_v1_account_password(self,change_password: ChangePassword, validate_response=True):
         """
         Change registered user password
         :return:
@@ -88,4 +93,6 @@ class AccountApi(RestClient):
             path='/v1/account/password',
             json=change_password.model_dump(exclude_none=True, by_alias=True)
         )
+        if validate_response:
+            return UserEnvelope(**response.json())
         return response

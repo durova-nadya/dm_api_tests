@@ -1,10 +1,7 @@
 import json
 import time
 from enum import Enum
-from json import loads
-
 from requests import JSONDecodeError
-
 from dm_api_account.models.change_email import ChangeEmail
 from dm_api_account.models.change_password import ChangePassword
 from dm_api_account.models.login_credentials import LoginCredentials
@@ -104,8 +101,7 @@ class AccountHelper:
             new_email: str
             ):
         change_email = ChangeEmail(login=login, password=password, email=new_email)
-        response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
-        assert response.status_code == 200, f"Email для пользователя {login} не был изменён"
+        self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
         token = self.get_token_by_login(login=login, token_type=TokenType.ACTIVATE)
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         return response
@@ -134,7 +130,6 @@ class AccountHelper:
             newPassword=new_password
         )
         response = self.dm_account_api.account_api.put_v1_account_password(change_password=change_password)
-        assert response.status_code == 200, f"Пароль пользователя {login} не был изменён"
         return response
 
 
@@ -151,7 +146,10 @@ class AccountHelper:
 
         emails = self.mailhog.mailhog_api.get_api_v2_messages(limit=10).json()["items"]
         for email in emails:
-            user_data = json.loads(email["Content"]["Body"])
+            try:
+                user_data = json.loads(email["Content"]["Body"])
+            except (JSONDecodeError, KeyError):
+                continue
             if user_data.get("Login") == login and user_data.get(link_type):
                 token_link_url = user_data[link_type]
                 token = token_link_url.split("/")[-1]
