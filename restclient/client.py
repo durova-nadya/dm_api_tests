@@ -6,6 +6,7 @@ import uuid
 import curlify
 
 from restclient.configation import Configuration
+from restclient.utilites import allure_attach
 
 
 class RestClient:
@@ -23,18 +24,23 @@ class RestClient:
             self.session.headers.update(headers)
         return headers
 
+    @allure_attach
     def post(self, path, **kwargs):
         return self._send_request(method='POST', path=path, **kwargs)
 
+    @allure_attach
     def get(self, path, **kwargs):
         return self._send_request(method='GET', path=path, **kwargs)
 
+    @allure_attach
     def put(self, path, **kwargs):
         return self._send_request(method='PUT', path=path, **kwargs)
 
+    @allure_attach
     def delete(self, path, **kwargs):
         return self._send_request(method='DELETE', path=path, **kwargs)
 
+    @allure_attach
     def _send_request(self, method, path, **kwargs):
         log = self.log.bind(event_id=str(uuid.uuid4()))
         full_url = self.host + path

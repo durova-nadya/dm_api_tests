@@ -1,6 +1,8 @@
 import json
 import time
 from enum import Enum
+
+import allure
 from requests import JSONDecodeError
 from dm_api_account.models.change_email import ChangeEmail
 from dm_api_account.models.change_password import ChangePassword
@@ -55,14 +57,12 @@ class AccountHelper:
         self.dm_account_api = dm_account_api
         self.mailhog = mailhog
 
-    def register_new_user(
-            self,
-            login: str,
-            password: str,
-            email: str
-    ):
+    @allure.step("Регистрация нового пользователя")
+    def register_new_user(self, login: str, password: str, email: str):
         registration = Registration(
-            login=login, password=password, email=email
+            login=login,
+            password=password,
+            email=email
         )
 
         response = self.dm_account_api.account_api.post_v1_account(registration=registration)
@@ -77,6 +77,7 @@ class AccountHelper:
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         return response
 
+    @allure.step("Аутентификация нового пользователя")
     def user_login(
             self,
             login: str,
