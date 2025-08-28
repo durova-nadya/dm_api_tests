@@ -8,8 +8,8 @@ from swagger_coverage_py.request_schema_handler import RequestSchemaHandler
 from swagger_coverage_py.uri import URI
 
 
-from restclient.configation import Configuration
-from restclient.utilites import allure_attach
+from packages.restclient.configation import Configuration
+from packages.restclient.utilites import allure_attach
 
 
 class RestClient:

@@ -5,3 +5,7 @@ service:
 user:
   login: "AlisaLuu"
   password: "777777777"
+
+telegram:
+  chat_id: "-1002197451367"
+  token: "8445768210:AAFTUofYRCCBhWA9lFE6Ms4acken2m6gf_4"

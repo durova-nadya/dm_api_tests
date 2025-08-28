@@ -1,7 +1,7 @@
 from datetime import datetime
 from hamcrest import assert_that, has_property, starts_with, all_of, instance_of, has_properties, equal_to
 from assertpy import assert_that, soft_assertions
-from dm_api_account.models.user_details_envelope import UserRole
+from clients.http.dm_api_account.models.user_details_envelope import UserRole
 
 
 class GetV1Account:
