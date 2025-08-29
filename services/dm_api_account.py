@@ -1,6 +1,6 @@
-from restclient.configation import Configuration
-from dm_api_account.apis.account_api import AccountApi
-from dm_api_account.apis.login_api import LoginApi
+from clients.http.dm_api_account.apis.account_api import AccountApi
+from packages.restclient.configation import Configuration
+from clients.http.dm_api_account.apis.login_api import LoginApi
 
 
 class DMApiAccount:
