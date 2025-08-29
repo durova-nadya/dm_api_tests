@@ -2,7 +2,7 @@ import allure
 
 
 @allure.suite("Тесты на проверку метода POST v1/account/login")
-@allure.sub_suite("Аутентификация нового пользователя")
+@allure.sub_suite("Аутентификация пользователя")
 class TestPostV1AccountLogin:
 
     @allure.title("Проверка аутентификация пользователя с корректными данными")
